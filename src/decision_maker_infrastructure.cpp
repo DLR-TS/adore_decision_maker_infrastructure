@@ -149,4 +149,32 @@ namespace adore
     dynamics::update_traffic_participants(latest_traffic_participant_set.value(), new_participant);
   }
 
+  void
+  DecisionMakerInfrastructure::update_dynamic_subscriptions()
+  {
+    auto topic_names_and_types = get_topic_names_and_types();
+    for( const auto& topic : topic_names_and_types )
+    {
+      const std::string& topic_name = topic.first;
+      if( topic_name.find( "/traffic_participant" ) != std::string::npos )
+      {
+        std::string vehicle_namespace = topic_name.substr( 1, topic_name.find( "/traffic_participant" ) - 1 );
+        // Skip subscribing to own namespace
+        if( vehicle_namespace == std::string( get_namespace() ).substr( 1 ) )
+        {
+          continue;
+        }
+
+        auto subscription = create_subscription<adore_ros2_msgs::msg::TrafficParticipant>(
+          topic_name, 10, [this, vehicle_namespace]( const adore_ros2_msgs::msg::TrafficParticipant& msg ) {
+            traffic_participant_callback( msg );
+          } );
+
+        traffic_participant_subscribers[vehicle_namespace] = subscription;
+
+        RCLCPP_INFO( get_logger(), "Subscribed to new vehicle namespace: %s", vehicle_namespace.c_str() );
+      }
+    }
+  }
+
 };

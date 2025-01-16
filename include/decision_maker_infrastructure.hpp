@@ -45,6 +45,8 @@ class DecisionMakerInfrastructure : public rclcpp::Node
 
     /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
     rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr subscriber_traffic_participant;
+    using StateSubscriber = rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr;
+    std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
 
     /******************************* OTHER MEMBERS *************************************************************************/
     std::optional<adore::map::Map>                                    road_map;
@@ -52,13 +54,13 @@ class DecisionMakerInfrastructure : public rclcpp::Node
 
   public:
 
-    bool                                    goal_points_present                    = true;
-    bool                                    debug_mode_active                      = true;
-    double                                  dt                                     = 0.05;
-    adore::dynamics::VehicleCommandLimits   command_limits                         = { 0.7, -2.0, 2.0 };
-    std::map<std::string, double>           multi_agent_PID_settings;
-    adore::planner::MultiAgentPID           multi_agent_PID_planner;
-    std::string                             map_file_location;
+    bool                                                                goal_points_present                    = true;
+    bool                                                                debug_mode_active                      = true;
+    double                                                              dt                                     = 0.05;
+    adore::dynamics::VehicleCommandLimits                               command_limits                         = { 0.7, -2.0, 2.0 };
+    std::map<std::string, double>                                       multi_agent_PID_settings;
+    adore::planner::MultiAgentPID                                       multi_agent_PID_planner;
+    std::string                                                         map_file_location;
 
     void run();
     void update_state();
@@ -69,6 +71,7 @@ class DecisionMakerInfrastructure : public rclcpp::Node
     void print_debug_info();
     void compute_routes_for_traffic_participant_set( adore::dynamics::TrafficParticipantSet& traffic_participant_set, adore::map::Map& road_map );
     void all_vehicles_follow_routes();
+    void update_dynamic_subscriptions();
 
     /******************************* PUBLISHER RELATED FUNCTIONS ************************************************************/
 
