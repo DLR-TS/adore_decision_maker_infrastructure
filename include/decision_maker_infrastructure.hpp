@@ -16,19 +16,21 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
-#include "planning/multi_agent_PID.hpp"
+
 #include "adore_dynamics_conversions.hpp"
-#include "adore_map/traffic_light.hpp"
 #include "adore_map/map.hpp"
 #include "adore_map/map_loader.hpp"
+#include "adore_map/traffic_light.hpp"
 #include "adore_map_conversions.hpp"
 #include "adore_math/angles.h"
 #include "adore_math/distance.h"
-#include "adore_ros2_msgs/msg/traffic_participant_set.hpp"
 #include "adore_ros2_msgs/msg/map.hpp"
 #include "adore_ros2_msgs/msg/route.hpp"
+#include "adore_ros2_msgs/msg/traffic_participant_set.hpp"
+
+#include "planning/multi_agent_PID.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
 
 using namespace std::chrono_literals;
 
@@ -37,51 +39,51 @@ namespace adore
 
 class DecisionMakerInfrastructure : public rclcpp::Node
 {
-  private:
+private:
 
-    /******************************* PUBLISHERS RELATED MEMBERS ************************************************************/
-    rclcpp::TimerBase::SharedPtr                                                 main_timer;
-    rclcpp::Publisher<adore_ros2_msgs::msg::TrafficParticipantSet>::SharedPtr    publisher_planned_traffic;
+  /******************************* PUBLISHERS RELATED MEMBERS ************************************************************/
+  rclcpp::TimerBase::SharedPtr                                              main_timer;
+  rclcpp::Publisher<adore_ros2_msgs::msg::TrafficParticipantSet>::SharedPtr publisher_planned_traffic;
 
-    /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
-    rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr subscriber_traffic_participant;
-    using StateSubscriber = rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr;
-    std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
+  /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
+  rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr subscriber_traffic_participant;
+  using StateSubscriber = rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr;
+  std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
 
-    /******************************* OTHER MEMBERS *************************************************************************/
-    std::optional<adore::map::Map>                                    road_map;
-    std::optional<adore::dynamics::TrafficParticipantSet>             latest_traffic_participant_set;
+  /******************************* OTHER MEMBERS *************************************************************************/
+  std::optional<adore::map::Map>         road_map;
+  adore::dynamics::TrafficParticipantSet latest_traffic_participant_set;
 
-  public:
+public:
 
-    bool                                                                goal_points_present                    = true;
-    bool                                                                debug_mode_active                      = true;
-    double                                                              dt                                     = 0.05;
-    adore::dynamics::VehicleCommandLimits                               command_limits                         = { 0.7, -2.0, 2.0 };
-    std::map<std::string, double>                                       multi_agent_PID_settings;
-    adore::planner::MultiAgentPID                                       multi_agent_PID_planner;
-    std::string                                                         map_file_location;
+  bool                                  goal_points_present = true;
+  bool                                  debug_mode_active   = true;
+  double                                dt                  = 0.05;
+  adore::dynamics::VehicleCommandLimits command_limits      = { 0.7, -2.0, 2.0 };
+  std::map<std::string, double>         multi_agent_PID_settings;
+  adore::planner::MultiAgentPID         multi_agent_PID_planner;
+  std::string                           map_file_location;
 
-    void run();
-    void update_state();
-    void create_subscribers();
-    void create_publishers();
-    void load_parameters();
-    void print_init_info();
-    void print_debug_info();
-    void compute_routes_for_traffic_participant_set( adore::dynamics::TrafficParticipantSet& traffic_participant_set, adore::map::Map& road_map );
-    void all_vehicles_follow_routes();
-    void update_dynamic_subscriptions();
+  void run();
+  void update_state();
+  void create_subscribers();
+  void create_publishers();
+  void load_parameters();
+  void print_init_info();
+  void print_debug_info();
+  void compute_routes_for_traffic_participant_set( adore::dynamics::TrafficParticipantSet& traffic_participant_set,
+                                                   adore::map::Map&                        road_map );
+  void all_vehicles_follow_routes();
+  void update_dynamic_subscriptions();
 
-    /******************************* PUBLISHER RELATED FUNCTIONS ************************************************************/
+  /******************************* PUBLISHER RELATED FUNCTIONS ************************************************************/
 
-    
 
-    /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
+  /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
 
-    void traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg );
+  void traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg );
 
-    DecisionMakerInfrastructure();
+  DecisionMakerInfrastructure();
 };
 
-}
+} // namespace adore
