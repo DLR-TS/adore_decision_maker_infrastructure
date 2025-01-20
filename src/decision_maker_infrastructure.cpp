@@ -31,7 +31,7 @@ DecisionMakerInfrastructure::run()
 {
   update_dynamic_subscriptions();
   dynamics::remove_old_participants( latest_traffic_participant_set, 0.5, this->now().seconds() );
-  all_vehicles_follow_routes();
+  // all_vehicles_follow_routes();
   if( debug_mode_active )
     print_debug_info();
 }
@@ -158,16 +158,21 @@ DecisionMakerInfrastructure::traffic_participant_callback( const adore_ros2_msgs
 void
 DecisionMakerInfrastructure::update_dynamic_subscriptions()
 {
-  auto topic_names_and_types = get_topic_names_and_types();
+  auto       topic_names_and_types = get_topic_names_and_types();
+  std::regex valid_topic_regex( R"(^/([^/]+)/traffic_participant$)" );
+  std::regex valid_type_regex( R"(^adore_ros2_msgs/msg/TrafficParticipant$)" );
+
   for( const auto& topic : topic_names_and_types )
   {
     const std::string&              topic_name = topic.first;
     const std::vector<std::string>& types      = topic.second;
 
-    if( topic_name.find( "/traffic_participant" ) != std::string::npos
-        && std::find( types.begin(), types.end(), "adore_ros2_msgs/msg/TrafficParticipant" ) != types.end() )
+    std::smatch match;
+    if( std::regex_match( topic_name, match, valid_topic_regex )
+        && std::any_of( types.begin(), types.end(),
+                        [&]( const std::string& type ) { return std::regex_match( type, valid_type_regex ); } ) )
     {
-      std::string vehicle_namespace = topic_name.substr( 1, topic_name.find( "/traffic_participant" ) - 1 );
+      std::string vehicle_namespace = match[1].str();
 
       // Skip subscribing to own namespace
       if( vehicle_namespace == std::string( get_namespace() ).substr( 1 ) )
