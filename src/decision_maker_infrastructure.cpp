@@ -32,7 +32,8 @@ DecisionMakerInfrastructure::run()
   update_dynamic_subscriptions();
   dynamics::remove_old_participants( latest_traffic_participant_set, 0.5, this->now().seconds() );
   all_vehicles_follow_routes();
-  print_debug_info();
+  if( debug_mode_active )
+    print_debug_info();
 }
 
 void
@@ -45,8 +46,6 @@ DecisionMakerInfrastructure::all_vehicles_follow_routes()
 void
 DecisionMakerInfrastructure::create_subscribers()
 {
-  subscriber_traffic_participant = create_subscription<adore_ros2_msgs::msg::TrafficParticipant>(
-    "/traffic_participant", 1, std::bind( &DecisionMakerInfrastructure::traffic_participant_callback, this, std::placeholders::_1 ) );
 
   main_timer = this->create_wall_timer( 100ms, std::bind( &DecisionMakerInfrastructure::run, this ) );
 }
@@ -123,6 +122,9 @@ DecisionMakerInfrastructure::print_debug_info()
 
   std::cerr << "traffic participants " << latest_traffic_participant_set.size() << std::endl;
 
+  std::cerr << "traffic participant subscriptions: " << traffic_participant_subscribers.size() << std::endl;
+
+
   std::cerr << "------- ============================== -------" << std::endl;
 }
 
@@ -159,19 +161,27 @@ DecisionMakerInfrastructure::update_dynamic_subscriptions()
   auto topic_names_and_types = get_topic_names_and_types();
   for( const auto& topic : topic_names_and_types )
   {
-    const std::string& topic_name = topic.first;
-    if( topic_name.find( "/traffic_participant" ) != std::string::npos )
+    const std::string&              topic_name = topic.first;
+    const std::vector<std::string>& types      = topic.second;
+
+    if( topic_name.find( "/traffic_participant" ) != std::string::npos
+        && std::find( types.begin(), types.end(), "adore_ros2_msgs/msg/TrafficParticipant" ) != types.end() )
     {
       std::string vehicle_namespace = topic_name.substr( 1, topic_name.find( "/traffic_participant" ) - 1 );
+
       // Skip subscribing to own namespace
       if( vehicle_namespace == std::string( get_namespace() ).substr( 1 ) )
       {
         continue;
       }
 
+      // Check if already subscribed
       if( traffic_participant_subscribers.count( vehicle_namespace ) > 0 )
+      {
         continue;
+      }
 
+      // Create a new subscription
       auto subscription = create_subscription<adore_ros2_msgs::msg::TrafficParticipant>(
         topic_name, 10,
         [this, vehicle_namespace]( const adore_ros2_msgs::msg::TrafficParticipant& msg ) { traffic_participant_callback( msg ); } );
