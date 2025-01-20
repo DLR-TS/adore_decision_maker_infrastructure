@@ -44,6 +44,8 @@ private:
   /******************************* PUBLISHERS RELATED MEMBERS ************************************************************/
   rclcpp::TimerBase::SharedPtr                                              main_timer;
   rclcpp::Publisher<adore_ros2_msgs::msg::TrafficParticipantSet>::SharedPtr publisher_planned_traffic;
+  rclcpp::Publisher<adore_ros2_msgs::msg::Map>::SharedPtr                   publisher_local_map;
+  rclcpp::Publisher<adore_ros2_msgs::msg::VehicleStateDynamic>::SharedPtr   publisher_infrastructure_position;
 
   /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
   rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr subscriber_traffic_participant;
@@ -56,10 +58,11 @@ private:
 
 public:
 
-  bool                                  goal_points_present = true;
-  bool                                  debug_mode_active   = true;
-  double                                dt                  = 0.05;
-  adore::dynamics::VehicleCommandLimits command_limits      = { 0.7, -2.0, 2.0 };
+  bool                                  debug_mode_active             = true;
+  double                                dt                            = 0.05;
+  double                                local_map_size                = 500;
+  adore::dynamics::VehicleStateDynamic   infrastructure_state;
+  adore::dynamics::VehicleCommandLimits command_limits                = { 0.7, -2.0, 2.0 };
   std::map<std::string, double>         multi_agent_PID_settings;
   adore::planner::MultiAgentPID         multi_agent_PID_planner;
   std::string                           map_file_location;
@@ -77,7 +80,8 @@ public:
   void update_dynamic_subscriptions();
 
   /******************************* PUBLISHER RELATED FUNCTIONS ************************************************************/
-
+  void publish_local_map();
+  void publish_infrastructure_position();
 
   /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
 

@@ -34,6 +34,8 @@ DecisionMakerInfrastructure::run()
   all_vehicles_follow_routes();
   if( debug_mode_active )
     print_debug_info();
+  publish_local_map();
+  publish_infrastructure_position();
 }
 
 void
@@ -54,6 +56,8 @@ void
 DecisionMakerInfrastructure::create_publishers()
 {
   publisher_planned_traffic = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants", 10 );
+  publisher_local_map = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 10 );
+  publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VehicleStateDynamic>( "vehicle_state/dynamic", 10 );
 }
 
 void
@@ -75,6 +79,10 @@ DecisionMakerInfrastructure::load_parameters()
   declare_parameter( "R2S map file", "" );
   get_parameter( "R2S map file", map_file_location );
 
+  declare_parameter( "infrastructure_position_x", 0.0 );
+  declare_parameter( "infrastructure_position_y", 0.0 );
+  get_parameter( "infrastructure_position_x", infrastructure_state.x );
+  get_parameter( "infrastructure_position_y", infrastructure_state.y );
 
   // Multi Agent PID related parameters
   std::vector<std::string> keys;
@@ -142,7 +150,6 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
     {
       std::cerr << "ERROR in decision maker infrastructure, one traffic participant has no goal point, route can not be computed"
                 << std::endl;
-      goal_points_present = false;
       return;
     }
   }
@@ -191,6 +198,22 @@ DecisionMakerInfrastructure::update_dynamic_subscriptions()
       RCLCPP_INFO( get_logger(), "Subscribed to new vehicle namespace: %s", vehicle_namespace.c_str() );
     }
   }
+}
+
+void
+DecisionMakerInfrastructure::publish_local_map()
+{
+  if( !road_map.has_value())
+    return;
+  auto local_map = road_map->get_submap( infrastructure_state, local_map_size, local_map_size );
+  publisher_local_map->publish( map::conversions::to_ros_msg( local_map ) );
+}
+
+void
+DecisionMakerInfrastructure::publish_infrastructure_position()
+{
+  adore_ros2_msgs::msg::VehicleStateDynamic dynamic_msg = dynamics::conversions::to_ros_msg( infrastructure_state );
+  publisher_infrastructure_position->publish( dynamic_msg );
 }
 
 }; // namespace adore
