@@ -53,16 +53,16 @@ private:
   std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
 
   /******************************* OTHER MEMBERS *************************************************************************/
-  std::optional<adore::map::Map>         road_map;
+  std::optional<adore::map::Map>         road_map = std::nullopt;
   adore::dynamics::TrafficParticipantSet latest_traffic_participant_set;
 
 public:
 
-  bool                                  debug_mode_active             = true;
-  double                                dt                            = 0.05;
-  double                                local_map_size                = 500;
-  adore::dynamics::VehicleStateDynamic   infrastructure_state;
-  adore::dynamics::VehicleCommandLimits command_limits                = { 0.7, -2.0, 2.0 };
+  bool                                  debug_mode_active = true;
+  double                                dt                = 0.05;
+  double                                local_map_size    = 500;
+  adore::dynamics::VehicleStateDynamic  infrastructure_state;
+  adore::dynamics::VehicleCommandLimits command_limits = { 0.7, -2.0, 2.0 };
   std::map<std::string, double>         multi_agent_PID_settings;
   adore::planner::MultiAgentPID         multi_agent_PID_planner;
   std::string                           map_file_location;
@@ -75,7 +75,7 @@ public:
   void print_init_info();
   void print_debug_info();
   void compute_routes_for_traffic_participant_set( adore::dynamics::TrafficParticipantSet& traffic_participant_set,
-                                                   adore::map::Map&                        road_map );
+                                                   const adore::map::Map&                  road_map );
   void all_vehicles_follow_routes();
   void update_dynamic_subscriptions();
 

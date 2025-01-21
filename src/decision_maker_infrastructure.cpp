@@ -33,9 +33,9 @@ DecisionMakerInfrastructure::run()
 {
   update_dynamic_subscriptions();
   dynamics::remove_old_participants( latest_traffic_participant_set, 0.5, this->now().seconds() );
-  if (road_map.has_value())
+  if( road_map.has_value() )
   {
-    compute_routes_for_traffic_participant_set(latest_traffic_participant_set, road_map.value());
+    compute_routes_for_traffic_participant_set( latest_traffic_participant_set, road_map.value() );
   }
   all_vehicles_follow_routes();
   if( debug_mode_active )
@@ -61,8 +61,8 @@ DecisionMakerInfrastructure::create_subscribers()
 void
 DecisionMakerInfrastructure::create_publishers()
 {
-  publisher_planned_traffic = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants", 10 );
-  publisher_local_map = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 10 );
+  publisher_planned_traffic         = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants", 10 );
+  publisher_local_map               = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 10 );
   publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VehicleStateDynamic>( "vehicle_state/dynamic", 10 );
 }
 
@@ -141,7 +141,7 @@ DecisionMakerInfrastructure::print_debug_info()
 
 void
 DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamics::TrafficParticipantSet& traffic_participant_set,
-                                                                         map::Map&                        road_map )
+                                                                         const map::Map&                  road_map )
 {
   for( auto& pair : traffic_participant_set )
   {
@@ -211,7 +211,7 @@ DecisionMakerInfrastructure::update_dynamic_subscriptions()
 void
 DecisionMakerInfrastructure::publish_local_map()
 {
-  if( !road_map.has_value())
+  if( !road_map.has_value() )
     return;
   auto local_map = road_map->get_submap( infrastructure_state, local_map_size, local_map_size );
   publisher_local_map->publish( map::conversions::to_ros_msg( local_map ) );
