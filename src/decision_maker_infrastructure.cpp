@@ -21,6 +21,8 @@ DecisionMakerInfrastructure::DecisionMakerInfrastructure() :
   Node( "decision_maker_infrastructure" )
 {
   load_parameters();
+  // Load map
+  road_map = map::MapLoader::load_from_r2s_file( map_file_location );
   create_subscribers();
   create_publishers();
   print_init_info();
@@ -47,7 +49,6 @@ DecisionMakerInfrastructure::all_vehicles_follow_routes()
 {
   multi_agent_PID_planner.plan_trajectories( latest_traffic_participant_set, command_limits );
   publisher_planned_traffic->publish( dynamics::conversions::to_ros_msg( latest_traffic_participant_set ) );
-  
 }
 
 void
@@ -109,9 +110,6 @@ DecisionMakerInfrastructure::load_parameters()
   }
 
   multi_agent_PID_planner.set_parameters( multi_agent_PID_settings );
-
-  // Load map
-  road_map = map::MapLoader::load_from_r2s_file( map_file_location );
 }
 
 void
