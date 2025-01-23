@@ -61,9 +61,9 @@ DecisionMakerInfrastructure::create_subscribers()
 void
 DecisionMakerInfrastructure::create_publishers()
 {
-  publisher_planned_traffic         = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants", 10 );
-  publisher_local_map               = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 10 );
-  publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VehicleStateDynamic>( "vehicle_state/dynamic", 10 );
+  publisher_planned_traffic         = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants", 1 );
+  publisher_local_map               = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 1 );
+  publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VehicleStateDynamic>( "vehicle_state/dynamic", 1 );
 }
 
 void
@@ -145,7 +145,7 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
 {
   for( auto& pair : traffic_participant_set )
   {
-    if( pair.second.goal_point.has_value() )
+    if( pair.second.goal_point.has_value() && !pair.second.route.has_value() )
     {
       pair.second.route = road_map.get_route( pair.second.state, pair.second.goal_point.value() );
     }
