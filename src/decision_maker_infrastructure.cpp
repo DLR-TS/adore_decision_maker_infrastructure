@@ -32,7 +32,7 @@ void
 DecisionMakerInfrastructure::run()
 {
   update_dynamic_subscriptions();
-  dynamics::remove_old_participants( latest_traffic_participant_set, 0.5, this->now().seconds() );
+  latest_traffic_participant_set.remove_old_participants( 0.5, this->now().seconds() );
   if( road_map.has_value() )
   {
     compute_routes_for_traffic_participant_set( latest_traffic_participant_set, road_map.value() );
@@ -109,6 +109,26 @@ DecisionMakerInfrastructure::load_parameters()
     std::cerr << "keys: " << keys[i] << ": " << values[i] << std::endl;
   }
 
+
+  std::vector<double> validity_area_points; // request assistance polygon
+  declare_parameter( "request_assistance_polygon", std::vector<double>{} );
+  get_parameter( "request_assistance_polygon", validity_area_points );
+
+  // Convert the parameter into a Polygon2d
+  if( validity_area_points.size() >= 6 ) // minimum 3 x, 3 y
+  {
+    math::Polygon2d validity_area;
+    validity_area.points.reserve( validity_area_points.size() / 2 );
+
+    for( size_t i = 0; i < validity_area_points.size(); i += 2 )
+    {
+      double x = validity_area_points[i];
+      double y = validity_area_points[i + 1];
+      validity_area.points.push_back( { x, y } );
+    }
+    latest_traffic_participant_set.validity_area = validity_area;
+  }
+
   multi_agent_PID_planner.set_parameters( multi_agent_PID_settings );
 }
 
@@ -131,7 +151,7 @@ DecisionMakerInfrastructure::print_debug_info()
   else
     std::cerr << "No local map data.\n";
 
-  std::cerr << "traffic participants " << latest_traffic_participant_set.size() << std::endl;
+  std::cerr << "traffic participants " << latest_traffic_participant_set.participants.size() << std::endl;
 
   std::cerr << "traffic participant subscriptions: " << traffic_participant_subscribers.size() << std::endl;
 
@@ -143,17 +163,16 @@ void
 DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamics::TrafficParticipantSet& traffic_participant_set,
                                                                          const map::Map&                  road_map )
 {
-  for( auto& pair : traffic_participant_set )
+  for( auto& [id, participant] : traffic_participant_set.participants )
   {
-    if( pair.second.goal_point.has_value() && !pair.second.route.has_value() )
+    if( participant.goal_point.has_value() && !participant.route.has_value() )
     {
-      pair.second.route = road_map.get_route( pair.second.state, pair.second.goal_point.value() );
+      participant.route = road_map.get_route( participant.state, participant.goal_point.value() );
     }
     else
     {
-      std::cerr << "ERROR in decision maker infrastructure, one traffic participant has no goal point, route can not be computed"
-                << std::endl;
-      return;
+      std::cerr << "traffic participant has no goal point, route can not be computed" << std::endl;
+      continue;
     }
   }
 }
@@ -162,7 +181,7 @@ void
 DecisionMakerInfrastructure::traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg )
 {
   auto new_participant = dynamics::conversions::to_cpp_type( msg );
-  dynamics::update_traffic_participants( latest_traffic_participant_set, new_participant );
+  latest_traffic_participant_set.update_traffic_participants( new_participant );
 }
 
 void

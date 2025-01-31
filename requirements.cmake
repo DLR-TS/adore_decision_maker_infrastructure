@@ -6,7 +6,7 @@ find_package(ament_lint_auto REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(adore_dynamics_conversions)
 find_package(adore_map_conversions)
-
+find_package(adore_math_conversions)
 find_package(console_bridge REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(tf2 REQUIRED)
