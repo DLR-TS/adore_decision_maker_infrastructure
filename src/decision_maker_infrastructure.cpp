@@ -111,8 +111,8 @@ DecisionMakerInfrastructure::load_parameters()
 
 
   std::vector<double> validity_area_points; // request assistance polygon
-  declare_parameter( "request_assistance_polygon", std::vector<double>{} );
-  get_parameter( "request_assistance_polygon", validity_area_points );
+  declare_parameter( "validity_area", std::vector<double>{} );
+  get_parameter( "validity_area", validity_area_points );
 
   // Convert the parameter into a Polygon2d
   if( validity_area_points.size() >= 6 ) // minimum 3 x, 3 y
