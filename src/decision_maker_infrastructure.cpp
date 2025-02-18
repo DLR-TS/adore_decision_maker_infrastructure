@@ -22,7 +22,7 @@ DecisionMakerInfrastructure::DecisionMakerInfrastructure() :
 {
   load_parameters();
   // Load map
-  road_map = map::MapLoader::load_from_r2s_file( map_file_location );
+  road_map = map::MapLoader::load_from_file( map_file_location );
   create_subscribers();
   create_publishers();
   print_init_info();
@@ -32,7 +32,7 @@ void
 DecisionMakerInfrastructure::run()
 {
   update_dynamic_subscriptions();
-  latest_traffic_participant_set.remove_old_participants( 0.5, this->now().seconds() );
+  latest_traffic_participant_set.remove_old_participants( 1.0, this->now().seconds() );
   if( road_map.has_value() )
   {
     compute_routes_for_traffic_participant_set( latest_traffic_participant_set, road_map.value() );
@@ -87,8 +87,10 @@ DecisionMakerInfrastructure::load_parameters()
 
   declare_parameter( "infrastructure_position_x", 0.0 );
   declare_parameter( "infrastructure_position_y", 0.0 );
+  declare_parameter( "infrastructure_yaw", 0.0 );
   get_parameter( "infrastructure_position_x", infrastructure_state.x );
   get_parameter( "infrastructure_position_y", infrastructure_state.y );
+  get_parameter( "infrastructure_yaw", infrastructure_state.yaw_angle );
 
   // Multi Agent PID related parameters
   std::vector<std::string> keys;
@@ -111,8 +113,8 @@ DecisionMakerInfrastructure::load_parameters()
 
 
   std::vector<double> validity_area_points; // request assistance polygon
-  declare_parameter( "validity_area", std::vector<double>{} );
-  get_parameter( "validity_area", validity_area_points );
+  declare_parameter( "validity_polygon", std::vector<double>{} );
+  get_parameter( "validity_polygon", validity_area_points );
 
   // Convert the parameter into a Polygon2d
   if( validity_area_points.size() >= 6 ) // minimum 3 x, 3 y
@@ -165,9 +167,16 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
 {
   for( auto& [id, participant] : traffic_participant_set.participants )
   {
-    if( participant.goal_point.has_value() && !participant.route.has_value() )
+    bool no_goal   = !participant.goal_point.has_value();
+    bool no_route  = !participant.route.has_value();
+    bool old_route = false; // !no_route || math::distance_2d(participant.route->center_lane[0], participant.state) > 5.0;
+    if( !no_goal && ( no_route || old_route ) )
     {
       participant.route = road_map.get_route( participant.state, participant.goal_point.value() );
+      if( !participant.route.has_value() )
+      {
+        std::cerr << "No route found for traffic participant" << std::endl;
+      }
     }
     else
     {
@@ -180,7 +189,8 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
 void
 DecisionMakerInfrastructure::traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg )
 {
-  auto new_participant = dynamics::conversions::to_cpp_type( msg );
+  auto new_participant       = dynamics::conversions::to_cpp_type( msg );
+  new_participant.state.time = now().seconds();
   latest_traffic_participant_set.update_traffic_participants( new_participant );
 }
 
