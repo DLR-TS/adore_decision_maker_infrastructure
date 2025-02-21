@@ -72,7 +72,7 @@ DecisionMakerInfrastructure::load_parameters()
   declare_parameter( "debug_mode_active", true );
   get_parameter( "debug_mode_active", debug_mode_active );
 
-  declare_parameter( "dt", 0.05 );
+  declare_parameter( "dt", 0.1 );
   get_parameter( "dt", dt );
 
   declare_parameter( "max_acceleration", 2.0 );
@@ -167,10 +167,9 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
 {
   for( auto& [id, participant] : traffic_participant_set.participants )
   {
-    bool no_goal   = !participant.goal_point.has_value();
-    bool no_route  = !participant.route.has_value();
-    bool old_route = false; // !no_route || math::distance_2d(participant.route->center_lane[0], participant.state) > 5.0;
-    if( !no_goal && ( no_route || old_route ) )
+    bool no_goal  = !participant.goal_point.has_value();
+    bool no_route = !participant.route.has_value();
+    if( !no_goal && no_route )
     {
       participant.route = road_map.get_route( participant.state, participant.goal_point.value() );
       if( !participant.route.has_value() )
