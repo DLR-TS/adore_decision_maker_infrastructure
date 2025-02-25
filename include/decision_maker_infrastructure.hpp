@@ -24,6 +24,7 @@
 #include "adore_map_conversions.hpp"
 #include "adore_math/angles.h"
 #include "adore_math/distance.h"
+#include "adore_math/polygon.h"
 #include "adore_ros2_msgs/msg/map.hpp"
 #include "adore_ros2_msgs/msg/route.hpp"
 #include "adore_ros2_msgs/msg/traffic_participant_set.hpp"
@@ -44,6 +45,8 @@ private:
   /******************************* PUBLISHERS RELATED MEMBERS ************************************************************/
   rclcpp::TimerBase::SharedPtr                                              main_timer;
   rclcpp::Publisher<adore_ros2_msgs::msg::TrafficParticipantSet>::SharedPtr publisher_planned_traffic;
+  rclcpp::Publisher<adore_ros2_msgs::msg::Map>::SharedPtr                   publisher_local_map;
+  rclcpp::Publisher<adore_ros2_msgs::msg::VehicleStateDynamic>::SharedPtr   publisher_infrastructure_position;
 
   /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
   rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr subscriber_traffic_participant;
@@ -51,15 +54,16 @@ private:
   std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
 
   /******************************* OTHER MEMBERS *************************************************************************/
-  std::optional<adore::map::Map>         road_map;
+  std::optional<adore::map::Map>         road_map = std::nullopt;
   adore::dynamics::TrafficParticipantSet latest_traffic_participant_set;
 
 public:
 
-  bool                                  goal_points_present = true;
-  bool                                  debug_mode_active   = true;
-  double                                dt                  = 0.05;
-  adore::dynamics::VehicleCommandLimits command_limits      = { 0.7, -2.0, 2.0 };
+  bool                                  debug_mode_active = true;
+  double                                dt                = 0.05;
+  double                                local_map_size    = 500;
+  adore::dynamics::VehicleStateDynamic  infrastructure_state;
+  adore::dynamics::VehicleCommandLimits command_limits = { 0.7, -2.0, 2.0 };
   std::map<std::string, double>         multi_agent_PID_settings;
   adore::planner::MultiAgentPID         multi_agent_PID_planner;
   std::string                           map_file_location;
@@ -72,12 +76,13 @@ public:
   void print_init_info();
   void print_debug_info();
   void compute_routes_for_traffic_participant_set( adore::dynamics::TrafficParticipantSet& traffic_participant_set,
-                                                   adore::map::Map&                        road_map );
+                                                   const adore::map::Map&                  road_map );
   void all_vehicles_follow_routes();
   void update_dynamic_subscriptions();
 
   /******************************* PUBLISHER RELATED FUNCTIONS ************************************************************/
-
+  void publish_local_map();
+  void publish_infrastructure_position();
 
   /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
 
