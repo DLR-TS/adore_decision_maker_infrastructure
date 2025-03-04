@@ -49,7 +49,6 @@ private:
   rclcpp::Publisher<adore_ros2_msgs::msg::VehicleStateDynamic>::SharedPtr   publisher_infrastructure_position;
 
   /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
-  rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr subscriber_traffic_participant;
   using StateSubscriber = rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr;
   std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
 
@@ -87,6 +86,7 @@ public:
   /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
 
   void traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg );
+
 
   DecisionMakerInfrastructure();
 };

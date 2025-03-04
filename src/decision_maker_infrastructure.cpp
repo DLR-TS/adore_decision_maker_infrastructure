@@ -82,8 +82,8 @@ DecisionMakerInfrastructure::load_parameters()
   get_parameter( "min_acceleration", command_limits.min_acceleration );
   get_parameter( "max_steering", command_limits.max_steering_angle );
 
-  declare_parameter( "R2S map file", "" );
-  get_parameter( "R2S map file", map_file_location );
+  declare_parameter( "map file", "" );
+  get_parameter( "map file", map_file_location );
 
   declare_parameter( "infrastructure_position_x", 0.0 );
   declare_parameter( "infrastructure_position_y", 0.0 );
@@ -213,10 +213,10 @@ DecisionMakerInfrastructure::update_dynamic_subscriptions()
       std::string vehicle_namespace = match[1].str();
 
       // Skip subscribing to own namespace
-      if( vehicle_namespace == std::string( get_namespace() ).substr( 1 ) )
-      {
-        continue;
-      }
+      // if( vehicle_namespace == std::string( get_namespace() ).substr( 1 ) )
+      // {
+      //   continue;
+      // }
 
       // Check if already subscribed
       if( traffic_participant_subscribers.count( vehicle_namespace ) > 0 )
