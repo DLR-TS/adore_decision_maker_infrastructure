@@ -63,7 +63,7 @@ DecisionMakerInfrastructure::create_publishers()
 {
   publisher_planned_traffic         = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants", 1 );
   publisher_local_map               = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 1 );
-  publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VehicleStateDynamic>( "vehicle_state/dynamic", 1 );
+  publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VisualizableObject>( "infrastructure_position", 1 );
 }
 
 void
@@ -88,9 +88,9 @@ DecisionMakerInfrastructure::load_parameters()
   declare_parameter( "infrastructure_position_x", 0.0 );
   declare_parameter( "infrastructure_position_y", 0.0 );
   declare_parameter( "infrastructure_yaw", 0.0 );
-  get_parameter( "infrastructure_position_x", infrastructure_state.x );
-  get_parameter( "infrastructure_position_y", infrastructure_state.y );
-  get_parameter( "infrastructure_yaw", infrastructure_state.yaw_angle );
+  get_parameter( "infrastructure_position_x", infrastructure_pose.x );
+  get_parameter( "infrastructure_position_y", infrastructure_pose.y );
+  get_parameter( "infrastructure_yaw", infrastructure_pose.yaw );
 
   // Multi Agent PID related parameters
   std::vector<std::string> keys;
@@ -241,15 +241,20 @@ DecisionMakerInfrastructure::publish_local_map()
 {
   if( !road_map.has_value() )
     return;
-  auto local_map = road_map->get_submap( infrastructure_state, local_map_size, local_map_size );
+  auto local_map = road_map->get_submap( infrastructure_pose, local_map_size, local_map_size );
   publisher_local_map->publish( map::conversions::to_ros_msg( local_map ) );
 }
 
 void
 DecisionMakerInfrastructure::publish_infrastructure_position()
 {
-  adore_ros2_msgs::msg::VehicleStateDynamic dynamic_msg = dynamics::conversions::to_ros_msg( infrastructure_state );
-  publisher_infrastructure_position->publish( dynamic_msg );
+  adore_ros2_msgs::msg::VisualizableObject obj;
+  obj.x     = infrastructure_pose.x;
+  obj.y     = infrastructure_pose.y;
+  obj.yaw   = infrastructure_pose.yaw;
+  obj.z     = 0.0;
+  obj.model = "low_poly_trailer_model.dae";
+  publisher_infrastructure_position->publish( obj );
 }
 
 }; // namespace adore
