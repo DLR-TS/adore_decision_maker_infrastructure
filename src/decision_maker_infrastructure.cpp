@@ -47,7 +47,7 @@ DecisionMakerInfrastructure::run()
 void
 DecisionMakerInfrastructure::all_vehicles_follow_routes()
 {
-  multi_agent_PID_planner.plan_trajectories( latest_traffic_participant_set, command_limits );
+  multi_agent_PID_planner.plan_trajectories( latest_traffic_participant_set );
   publisher_planned_traffic->publish( dynamics::conversions::to_ros_msg( latest_traffic_participant_set ) );
 }
 
