@@ -169,8 +169,21 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
   {
     bool no_goal  = !participant.goal_point.has_value();
     bool no_route = !participant.route.has_value();
-    if( !no_goal && no_route )
+    bool has_v2x_id = participant.v2x_id.has_value();
+
+    bool v2x_id_valid = false;
+    if (has_v2x_id)
     {
+      std::cerr << "v2x id: " << participant.v2x_id.value() << std::endl;
+      if (participant.v2x_id.value() > 0)
+      {
+        v2x_id_valid = true;        
+      }
+    }
+    
+    if( !no_goal && no_route && has_v2x_id && v2x_id_valid)
+    {
+
       participant.route = road_map.get_route( participant.state, participant.goal_point.value() );
       if( !participant.route.has_value() )
       {
