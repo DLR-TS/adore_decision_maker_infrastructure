@@ -16,4 +16,5 @@ find_package(tf2_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(unique_identifier_msgs REQUIRED)
+find_package(bob_perception_msgs REQUIRED)
 
