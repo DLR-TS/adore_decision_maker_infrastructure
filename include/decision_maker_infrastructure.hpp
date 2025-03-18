@@ -20,6 +20,7 @@
 #include "adore_dynamics_conversions.hpp"
 #include "adore_map/map.hpp"
 #include "adore_map/map_loader.hpp"
+#include "adore_map/route.hpp"
 #include "adore_map/traffic_light.hpp"
 #include "adore_map_conversions.hpp"
 #include "adore_math/angles.h"
@@ -54,9 +55,6 @@ private:
   using StateSubscriber = rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr;
   std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
 
-  rclcpp::Subscription<bob_perception_msgs::msg::TrackedOrientedBoxV2xArray>::SharedPtr subscriber_tracked_oriented_boxes;
-
-
   /******************************* OTHER MEMBERS *************************************************************************/
   std::optional<adore::map::Map>         road_map = std::nullopt;
   adore::dynamics::TrafficParticipantSet latest_traffic_participant_set;
@@ -64,8 +62,8 @@ private:
 public:
 
   bool                                  debug_mode_active = true;
-  double                                dt                = 0.05;
-  double                                local_map_size    = 500;
+  double                                dt                = 0.1;
+  double                                local_map_size    = 50;
   adore::math::Pose2d                   infrastructure_pose;
   adore::dynamics::VehicleCommandLimits command_limits = { 0.7, -2.0, 2.0 };
   std::map<std::string, double>         multi_agent_PID_settings;
@@ -92,8 +90,6 @@ public:
   /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
 
   void traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg );
-  void tracked_oriented_boxes_callback( const bob_perception_msgs::msg::TrackedOrientedBoxV2xArray::SharedPtr msg );
-
 
   DecisionMakerInfrastructure();
 };
