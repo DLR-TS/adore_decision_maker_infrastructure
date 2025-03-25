@@ -31,7 +31,6 @@
 #include "adore_ros2_msgs/msg/traffic_participant_set.hpp"
 #include "adore_ros2_msgs/msg/visualizable_object.hpp"
 
-#include "bob_perception_msgs/msg/tracked_oriented_box_v2x_array.hpp"
 #include "planning/multi_agent_PID.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
