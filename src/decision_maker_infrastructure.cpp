@@ -13,6 +13,7 @@
  ********************************************************************************/
 
 #include "decision_maker_infrastructure.hpp"
+#include <adore_dynamics_conversions.hpp>
 
 namespace adore
 {
@@ -31,10 +32,7 @@ DecisionMakerInfrastructure::DecisionMakerInfrastructure() :
 void
 DecisionMakerInfrastructure::run()
 {
-  update_dynamic_subscriptions();
   auto start_time = std::chrono::high_resolution_clock::now(); // Start timer
-
-  latest_traffic_participant_set.remove_old_participants( 1.0, this->now().seconds() );
 
   if( road_map.has_value() )
   {
@@ -65,13 +63,14 @@ DecisionMakerInfrastructure::all_vehicles_follow_routes()
 void
 DecisionMakerInfrastructure::create_subscribers()
 {
+  subscriber_traffic_participant_set = create_subscription<adore_ros2_msgs::msg::TrafficParticipantSet>("traffic_participants", 1, std::bind( &DecisionMakerInfrastructure::traffic_participants_callback, this, std::placeholders::_1 ) );
   main_timer = create_wall_timer( 100ms, std::bind( &DecisionMakerInfrastructure::run, this ) );
 }
 
 void
 DecisionMakerInfrastructure::create_publishers()
 {
-  publisher_planned_traffic         = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants", 1 );
+  publisher_planned_traffic         = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants_with_trajectories", 1 );
   publisher_local_map               = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 1 );
   publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VisualizableObject>( "infrastructure_position", 1 );
 }
@@ -165,9 +164,6 @@ DecisionMakerInfrastructure::print_debug_info()
 
   std::cerr << "traffic participants " << latest_traffic_participant_set.participants.size() << std::endl;
 
-  std::cerr << "traffic participant subscriptions: " << traffic_participant_subscribers.size() << std::endl;
-
-
   std::cerr << "------- ============================== -------" << std::endl;
 }
 
@@ -193,52 +189,6 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
 }
 
 void
-DecisionMakerInfrastructure::traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg )
-{
-  auto new_participant       = dynamics::conversions::to_cpp_type( msg );
-  new_participant.state.time = now().seconds();
-  latest_traffic_participant_set.update_traffic_participants( new_participant );
-}
-
-void
-DecisionMakerInfrastructure::update_dynamic_subscriptions()
-{
-
-  auto       topic_names_and_types = get_topic_names_and_types();
-  std::regex valid_topic_regex( R"(^/([^/]+)/traffic_participant$)" );
-  std::regex valid_type_regex( R"(^adore_ros2_msgs/msg/TrafficParticipant$)" );
-
-  for( const auto& topic : topic_names_and_types )
-  {
-    const std::string&              topic_name = topic.first;
-    const std::vector<std::string>& types      = topic.second;
-
-    std::smatch match;
-    if( std::regex_match( topic_name, match, valid_topic_regex )
-        && std::any_of( types.begin(), types.end(),
-                        [&]( const std::string& type ) { return std::regex_match( type, valid_type_regex ); } ) )
-    {
-      std::string vehicle_namespace = match[1].str();
-
-      // Check if already subscribed
-      if( traffic_participant_subscribers.count( vehicle_namespace ) > 0 )
-      {
-        continue;
-      }
-
-      // Create a new subscription
-      auto subscription = create_subscription<adore_ros2_msgs::msg::TrafficParticipant>(
-        topic_name, 20,
-        [this, vehicle_namespace]( const adore_ros2_msgs::msg::TrafficParticipant& msg ) { traffic_participant_callback( msg ); } );
-
-      traffic_participant_subscribers[vehicle_namespace] = subscription;
-
-      RCLCPP_INFO( get_logger(), "Subscribed to new vehicle namespace: %s", vehicle_namespace.c_str() );
-    }
-  }
-}
-
-void
 DecisionMakerInfrastructure::publish_local_map()
 {
   if( !road_map.has_value() )
@@ -257,6 +207,12 @@ DecisionMakerInfrastructure::publish_infrastructure_position()
   obj.z     = 0.0;
   obj.model = "low_poly_trailer_model.dae";
   publisher_infrastructure_position->publish( obj );
+}
+
+void
+DecisionMakerInfrastructure::traffic_participants_callback( const adore_ros2_msgs::msg::TrafficParticipantSet& msg)
+{
+  latest_traffic_participant_set = dynamics::conversions::to_cpp_type(msg);
 }
 
 }; // namespace adore

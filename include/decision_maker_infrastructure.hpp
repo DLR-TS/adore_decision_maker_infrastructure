@@ -51,8 +51,7 @@ private:
   rclcpp::Publisher<adore_ros2_msgs::msg::VisualizableObject>::SharedPtr    publisher_infrastructure_position;
 
   /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
-  using StateSubscriber = rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipant>::SharedPtr;
-  std::unordered_map<std::string, StateSubscriber> traffic_participant_subscribers;
+  rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipantSet>::SharedPtr      subscriber_traffic_participant_set;
 
   /******************************* OTHER MEMBERS *************************************************************************/
   std::optional<adore::map::Map>         road_map = std::nullopt;
@@ -80,15 +79,13 @@ public:
   void compute_routes_for_traffic_participant_set( adore::dynamics::TrafficParticipantSet& traffic_participant_set,
                                                    const adore::map::Map&                  road_map );
   void all_vehicles_follow_routes();
-  void update_dynamic_subscriptions();
 
   /******************************* PUBLISHER RELATED FUNCTIONS ************************************************************/
   void publish_local_map();
   void publish_infrastructure_position();
 
   /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
-
-  void traffic_participant_callback( const adore_ros2_msgs::msg::TrafficParticipant& msg );
+  void traffic_participants_callback( const adore_ros2_msgs::msg::TrafficParticipantSet& msg);
 
   DecisionMakerInfrastructure();
 };
