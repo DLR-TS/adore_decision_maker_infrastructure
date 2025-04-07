@@ -61,7 +61,7 @@ public:
 
   bool                                  debug_mode_active = true;
   double                                dt                = 0.1;
-  double                                local_map_size    = 50;
+  double                                local_map_size    = 200;
   adore::math::Pose2d                   infrastructure_pose;
   adore::dynamics::VehicleCommandLimits command_limits = { 0.7, -2.0, 2.0 };
   std::map<std::string, double>         multi_agent_PID_settings;

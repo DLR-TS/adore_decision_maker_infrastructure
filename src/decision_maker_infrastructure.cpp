@@ -13,6 +13,7 @@
  ********************************************************************************/
 
 #include "decision_maker_infrastructure.hpp"
+#include <adore_math/point.h>
 #include <adore_dynamics_conversions.hpp>
 
 namespace adore
@@ -178,12 +179,12 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
 
     if( !no_goal && no_route )
     {
-      participant.route = map::Route( participant.state, participant.goal_point.value(), road_map );
-      if( participant.route->center_lane.empty() )
-      {
-        participant.route = std::nullopt;
-        std::cerr << "No route found for traffic participant" << std::endl;
-      }
+        participant.route = map::Route( participant.state, participant.goal_point.value(), road_map );
+        if( participant.route->center_lane.empty() )
+        {
+          participant.route = std::nullopt;
+          std::cerr << "No route found for traffic participant" << std::endl;
+        }
     }
   }
 }
