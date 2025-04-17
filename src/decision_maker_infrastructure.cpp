@@ -13,8 +13,9 @@
  ********************************************************************************/
 
 #include "decision_maker_infrastructure.hpp"
-#include <adore_math/point.h>
+
 #include <adore_dynamics_conversions.hpp>
+#include <adore_math/point.h>
 
 namespace adore
 {
@@ -64,15 +65,16 @@ DecisionMakerInfrastructure::all_vehicles_follow_routes()
 void
 DecisionMakerInfrastructure::create_subscribers()
 {
-  subscriber_traffic_participant_set = create_subscription<adore_ros2_msgs::msg::TrafficParticipantSet>("traffic_participants", 1, std::bind( &DecisionMakerInfrastructure::traffic_participants_callback, this, std::placeholders::_1 ) );
+  subscriber_traffic_participant_set = create_subscription<adore_ros2_msgs::msg::TrafficParticipantSet>(
+    "traffic_participants", 1, std::bind( &DecisionMakerInfrastructure::traffic_participants_callback, this, std::placeholders::_1 ) );
   main_timer = create_wall_timer( 100ms, std::bind( &DecisionMakerInfrastructure::run, this ) );
 }
 
 void
 DecisionMakerInfrastructure::create_publishers()
 {
-  publisher_planned_traffic         = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants_with_trajectories", 1 );
-  publisher_local_map               = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 1 );
+  publisher_planned_traffic = create_publisher<adore_ros2_msgs::msg::TrafficParticipantSet>( "traffic_participants_with_trajectories", 1 );
+  publisher_local_map       = create_publisher<adore_ros2_msgs::msg::Map>( "local_map", 1 );
   publisher_infrastructure_position = create_publisher<adore_ros2_msgs::msg::VisualizableObject>( "infrastructure_position", 1 );
 }
 
@@ -179,12 +181,12 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
 
     if( !no_goal && no_route )
     {
-        participant.route = map::Route( participant.state, participant.goal_point.value(), road_map );
-        if( participant.route->center_lane.empty() )
-        {
-          participant.route = std::nullopt;
-          std::cerr << "No route found for traffic participant" << std::endl;
-        }
+      participant.route = map::Route( participant.state, participant.goal_point.value(), road_map );
+      if( participant.route->center_lane.empty() )
+      {
+        participant.route = std::nullopt;
+        std::cerr << "No route found for traffic participant" << std::endl;
+      }
     }
   }
 }
@@ -202,18 +204,20 @@ void
 DecisionMakerInfrastructure::publish_infrastructure_position()
 {
   adore_ros2_msgs::msg::VisualizableObject obj;
-  obj.x     = infrastructure_pose.x;
-  obj.y     = infrastructure_pose.y;
-  obj.yaw   = infrastructure_pose.yaw;
-  obj.z     = 0.0;
-  obj.model = "low_poly_trailer_model.dae";
+  obj.x               = infrastructure_pose.x;
+  obj.y               = infrastructure_pose.y;
+  obj.yaw             = infrastructure_pose.yaw;
+  obj.z               = 0.0;
+  obj.model           = "low_poly_trailer_model.dae";
+  obj.header.frame_id = "world";
+
   publisher_infrastructure_position->publish( obj );
 }
 
 void
-DecisionMakerInfrastructure::traffic_participants_callback( const adore_ros2_msgs::msg::TrafficParticipantSet& msg)
+DecisionMakerInfrastructure::traffic_participants_callback( const adore_ros2_msgs::msg::TrafficParticipantSet& msg )
 {
-  latest_traffic_participant_set = dynamics::conversions::to_cpp_type(msg);
+  latest_traffic_participant_set = dynamics::conversions::to_cpp_type( msg );
 }
 
 }; // namespace adore
