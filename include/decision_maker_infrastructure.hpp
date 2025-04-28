@@ -51,7 +51,7 @@ private:
   rclcpp::Publisher<adore_ros2_msgs::msg::VisualizableObject>::SharedPtr    publisher_infrastructure_position;
 
   /******************************* SUBSCRIBERS RELATED MEMBERS ************************************************************/
-  rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipantSet>::SharedPtr      subscriber_traffic_participant_set;
+  rclcpp::Subscription<adore_ros2_msgs::msg::TrafficParticipantSet>::SharedPtr subscriber_traffic_participant_set;
 
   /******************************* OTHER MEMBERS *************************************************************************/
   std::optional<adore::map::Map>         road_map = std::nullopt;
@@ -66,6 +66,8 @@ public:
   adore::dynamics::VehicleCommandLimits command_limits = { 0.7, -2.0, 2.0 };
   std::map<std::string, double>         multi_agent_PID_settings;
   adore::planner::MultiAgentPID         multi_agent_PID_planner;
+  adore::planner::MultiAgentPID         multi_agent_PID_planner_MRM;
+
 
   std::string map_file_location;
 
@@ -85,7 +87,7 @@ public:
   void publish_infrastructure_position();
 
   /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
-  void traffic_participants_callback( const adore_ros2_msgs::msg::TrafficParticipantSet& msg);
+  void traffic_participants_callback( const adore_ros2_msgs::msg::TrafficParticipantSet& msg );
 
   DecisionMakerInfrastructure();
 };

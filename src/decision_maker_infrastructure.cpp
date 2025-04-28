@@ -58,7 +58,10 @@ DecisionMakerInfrastructure::run()
 void
 DecisionMakerInfrastructure::all_vehicles_follow_routes()
 {
+  auto mrm_participant_set = latest_traffic_participant_set;
   multi_agent_PID_planner.plan_trajectories( latest_traffic_participant_set );
+  multi_agent_PID_planner_MRM.plan_trajectories( mrm_participant_set );
+  // TODO add the MRM trajectories to the traffic participants
   publisher_planned_traffic->publish( dynamics::conversions::to_ros_msg( latest_traffic_participant_set ) );
 }
 
@@ -144,6 +147,8 @@ DecisionMakerInfrastructure::load_parameters()
   }
 
   multi_agent_PID_planner.set_parameters( multi_agent_PID_settings );
+  multi_agent_PID_planner_MRM           = multi_agent_PID_planner;
+  mutli_agent_PID_planner_MRM.max_speed = 0.0;
 }
 
 void
@@ -178,6 +183,9 @@ DecisionMakerInfrastructure::compute_routes_for_traffic_participant_set( dynamic
   {
     bool no_goal  = !participant.goal_point.has_value();
     bool no_route = !participant.route.has_value();
+
+    if( !no_route )
+      participant.route->map = std::make_shared<map::Map>( road_map );
 
     if( !no_goal && no_route )
     {
