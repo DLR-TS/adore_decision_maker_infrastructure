@@ -58,9 +58,9 @@ DecisionMakerInfrastructure::run()
 void
 DecisionMakerInfrastructure::all_vehicles_follow_routes()
 {
-  auto mrm_participant_set = latest_traffic_participant_set;
+  // auto mrm_participant_set = latest_traffic_participant_set;
   multi_agent_PID_planner.plan_trajectories( latest_traffic_participant_set );
-  multi_agent_PID_planner_MRM.plan_trajectories( mrm_participant_set );
+  // multi_agent_PID_planner_MRM.plan_trajectories( mrm_participant_set );
   // TODO add the MRM trajectories to the traffic participants
   publisher_planned_traffic->publish( dynamics::conversions::to_ros_msg( latest_traffic_participant_set ) );
 }
@@ -147,8 +147,8 @@ DecisionMakerInfrastructure::load_parameters()
   }
 
   multi_agent_PID_planner.set_parameters( multi_agent_PID_settings );
-  multi_agent_PID_planner_MRM           = multi_agent_PID_planner;
-  mutli_agent_PID_planner_MRM.max_speed = 0.0;
+  // multi_agent_PID_planner_MRM           = multi_agent_PID_planner;
+  // mutli_agent_PID_planner_MRM.max_speed = 0.0;
 }
 
 void

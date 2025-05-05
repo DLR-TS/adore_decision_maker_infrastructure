@@ -66,7 +66,7 @@ public:
   adore::dynamics::VehicleCommandLimits command_limits = { 0.7, -2.0, 2.0 };
   std::map<std::string, double>         multi_agent_PID_settings;
   adore::planner::MultiAgentPID         multi_agent_PID_planner;
-  adore::planner::MultiAgentPID         multi_agent_PID_planner_MRM;
+  // adore::planner::MultiAgentPID         multi_agent_PID_planner_MRM;
 
 
   std::string map_file_location;
