@@ -89,7 +89,7 @@ public:
   /******************************* SUBSCRIBER RELATED FUNCTIONS************************************************************/
   void traffic_participants_callback( const adore_ros2_msgs::msg::TrafficParticipantSet& msg );
 
-  DecisionMakerInfrastructure();
+  explicit DecisionMakerInfrastructure(const rclcpp::NodeOptions & options);
 };
 
 } // namespace adore

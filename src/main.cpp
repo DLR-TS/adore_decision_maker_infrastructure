@@ -5,7 +5,7 @@ int
 main( int argc, char* argv[] )
 {
   rclcpp::init( argc, argv );
-  rclcpp::spin( std::make_shared<adore::DecisionMakerInfrastructure>() );
+  rclcpp::spin( std::make_shared<adore::DecisionMakerInfrastructure>(rclcpp::NodeOptions{}) );
   rclcpp::shutdown();
   return 0;
 }

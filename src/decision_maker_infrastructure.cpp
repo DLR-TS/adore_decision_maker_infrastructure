@@ -20,8 +20,7 @@
 namespace adore
 {
 
-DecisionMakerInfrastructure::DecisionMakerInfrastructure() :
-  Node( "decision_maker_infrastructure" )
+DecisionMakerInfrastructure::DecisionMakerInfrastructure(const rclcpp::NodeOptions & options) : Node( "decision_maker_infrastructure" , options)
 {
   load_parameters();
   // Load map
@@ -229,3 +228,7 @@ DecisionMakerInfrastructure::traffic_participants_callback( const adore_ros2_msg
 }
 
 }; // namespace adore
+
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(adore::DecisionMakerInfrastructure)

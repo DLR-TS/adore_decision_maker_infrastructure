@@ -7,6 +7,7 @@ project(${PROJECT})
 include($ENV{SOURCE_DIRECTORY}/libraries/adore_libraries.cmake)
 
 include(requirements.cmake)
+set(CMAKE_CXX_STANDARD 20)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
 # Ensure the Release build uses -O3 for optimization
@@ -35,4 +36,17 @@ install(TARGETS
   DESTINATION lib/${PROJECT}
 )
 
+add_library(decisionmakerinfrastructure_component SHARED src/decision_maker_infrastructure.cpp)
+add_all_target_include_directories(decisionmakerinfrastructure_component)
+add_all_target_link_libraries(decisionmakerinfrastructure_component)
+rclcpp_components_register_node(
+  decisionmakerinfrastructure_component
+  PLUGIN "adore::DecisionMakerInfrastructure"
+  EXECUTABLE decisionmakerinfrastructure
+)
+install(TARGETS decisionmakerinfrastructure_component
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 ament_package()
